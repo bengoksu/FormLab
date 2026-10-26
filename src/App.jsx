@@ -54,7 +54,7 @@ function App() {
         aciklama="Hayalindeki formları kolayca tasarla."
       />
 
-      <h2>Yeni Form Oluştur</h2>
+      <h2 className="text-3xl font-bold text-purple-600">Yeni Form Oluştur</h2>
 
       <input
         type="text"

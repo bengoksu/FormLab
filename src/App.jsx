@@ -80,16 +80,52 @@ function App() {
           Oluşturulan Formlar
         </h2>
 
-        <ul>
-          {formlar.map((form) => (
-            <li key={form.id}>
-              {form.ad}
+        {formlar.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center">
+            <div className="mb-4 text-4xl">📄</div>
 
-              <button onClick={() => formSil(form.id)}>Sil</button>
-              <button onClick={() => formGuncelle(form.id)}>Güncelle</button>
-            </li>
-          ))}
-        </ul>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Henüz form oluşturmadınız
+            </h3>
+
+            <p className="mt-2 text-sm text-gray-500">
+              İlk formunuzu oluşturmak için yukarıdaki alana bir form adı girin.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {formlar.map((form) => (
+              <div
+                key={form.id}
+                className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-purple-100 p-3 text-purple-600">
+                    📄
+                  </div>
+
+                  <h3 className="font-medium text-gray-800">{form.ad}</h3>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => formGuncelle(form.id)}
+                    className="rounded-lg bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
+                  >
+                    Düzenle
+                  </button>
+
+                  <button
+                    onClick={() => formSil(form.id)}
+                    className="rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+                  >
+                    Sil
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

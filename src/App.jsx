@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
+import FormEditor from "./components/FormEditor";
 
 function App() {
   const [formAdi, setFormAdi] = useState("");
-  const [formlar, setFormlar] = useState([]);
+  const [aktifFormId, setAktifFormId] = useState(null);
 
+  const [formlar, setFormlar] = useState(() => {
+    const kayitliFormlar = localStorage.getItem("formlab_formlar");
+
+    return kayitliFormlar ? JSON.parse(kayitliFormlar) : [];
+  });
+
+  // Formları LocalStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem("formlab_formlar", JSON.stringify(formlar));
+  }, [formlar]);
+
+  // Yeni form oluştur
   function formEkle() {
     if (formAdi.trim() === "") {
       alert("Lütfen bir form adı giriniz.");
@@ -14,18 +27,21 @@ function App() {
     const yeniForm = {
       id: crypto.randomUUID(),
       ad: formAdi.trim(),
+      sorular: [],
     };
 
     setFormlar([...formlar, yeniForm]);
     setFormAdi("");
   }
 
+  // Form sil
   function formSil(silinecekId) {
     const kalanFormlar = formlar.filter((form) => form.id !== silinecekId);
 
     setFormlar(kalanFormlar);
   }
 
+  // Form adını güncelle
   function formGuncelle(guncellenecekId) {
     const yeniAd = prompt("Yeni form adını giriniz:");
 
@@ -47,6 +63,27 @@ function App() {
     setFormlar(guncellenmisFormlar);
   }
 
+  // Seçilen formu aç
+  function formAc(id) {
+    setAktifFormId(id);
+  }
+
+  const aktifForm = formlar.find((form) => form.id === aktifFormId);
+
+  if (aktifForm) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-8">
+        <div className="mx-auto max-w-5xl rounded-2xl bg-white p-8 shadow-sm">
+          <Header
+            baslik="FormLab"
+            aciklama="Hayalindeki formları kolayca tasarla."
+          />
+          <FormEditor form={aktifForm} geriDon={() => setAktifFormId(null)} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 p-8">
       <div className="mx-auto max-w-5xl rounded-2xl bg-white p-8 shadow-sm">
@@ -55,6 +92,7 @@ function App() {
           aciklama="Hayalindeki formları kolayca tasarla."
         />
 
+        {/* Form oluşturma alanı */}
         <h2 className="text-3xl font-bold text-purple-600">
           Yeni Form Oluştur
         </h2>
@@ -76,6 +114,7 @@ function App() {
           </button>
         </div>
 
+        {/* Form listesi */}
         <h2 className="mt-10 mb-5 text-2xl font-semibold text-gray-800">
           Oluşturulan Formlar
         </h2>
@@ -108,6 +147,15 @@ function App() {
                 </div>
 
                 <div className="flex gap-2">
+                  {/* Formu Aç */}
+                  <button
+                    onClick={() => formAc(form.id)}
+                    className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
+                  >
+                    Formu Aç
+                  </button>
+
+                  {/* Düzenle */}
                   <button
                     onClick={() => formGuncelle(form.id)}
                     className="rounded-lg bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
@@ -115,6 +163,7 @@ function App() {
                     Düzenle
                   </button>
 
+                  {/* Sil */}
                   <button
                     onClick={() => formSil(form.id)}
                     className="rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"

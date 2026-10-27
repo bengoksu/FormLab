@@ -23,7 +23,6 @@ function App() {
       alert("Lütfen bir form adı giriniz.");
       return;
     }
-
     const yeniForm = {
       id: crypto.randomUUID(),
       ad: formAdi.trim(),
@@ -98,6 +97,23 @@ function App() {
     );
   }
 
+  function soruGuncelle(formId, soruId, degisiklikler) {
+    setFormlar((mevcutFormlar) =>
+      mevcutFormlar.map((form) => {
+        if (form.id !== formId) {
+          return form;
+        }
+
+        return {
+          ...form,
+          sorular: (form.sorular || []).map((soru) =>
+            soru.id === soruId ? { ...soru, ...degisiklikler } : soru,
+          ),
+        };
+      }),
+    );
+  }
+
   const aktifForm = formlar.find((form) => form.id === aktifFormId);
 
   if (aktifForm) {
@@ -113,6 +129,7 @@ function App() {
             geriDon={() => setAktifFormId(null)}
             soruEkle={soruEkle}
             soruSil={soruSil}
+            soruGuncelle={soruGuncelle}
           />
         </div>
       </div>

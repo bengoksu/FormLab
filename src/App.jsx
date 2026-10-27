@@ -68,6 +68,36 @@ function App() {
     setAktifFormId(id);
   }
 
+  function soruEkle(formId, yeniSoru) {
+    setFormlar((mevcutFormlar) =>
+      mevcutFormlar.map((form) => {
+        if (form.id !== formId) {
+          return form;
+        }
+
+        return {
+          ...form,
+          sorular: [...(form.sorular || []), yeniSoru],
+        };
+      }),
+    );
+  }
+
+  function soruSil(formId, soruId) {
+    setFormlar((mevcutFormlar) =>
+      mevcutFormlar.map((form) => {
+        if (form.id !== formId) {
+          return form;
+        }
+
+        return {
+          ...form,
+          sorular: (form.sorular || []).filter((soru) => soru.id !== soruId),
+        };
+      }),
+    );
+  }
+
   const aktifForm = formlar.find((form) => form.id === aktifFormId);
 
   if (aktifForm) {
@@ -78,7 +108,12 @@ function App() {
             baslik="FormLab"
             aciklama="Hayalindeki formları kolayca tasarla."
           />
-          <FormEditor form={aktifForm} geriDon={() => setAktifFormId(null)} />
+          <FormEditor
+            form={aktifForm}
+            geriDon={() => setAktifFormId(null)}
+            soruEkle={soruEkle}
+            soruSil={soruSil}
+          />
         </div>
       </div>
     );

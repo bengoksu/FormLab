@@ -274,6 +274,37 @@ function App() {
     );
   }
 
+  function soruSirala(formId, aktifSoruId, hedefSoruId) {
+    setFormlar((mevcutFormlar) =>
+      mevcutFormlar.map((form) => {
+        if (form.id !== formId) {
+          return form;
+        }
+
+        const sorular = form.sorular || [];
+        const eskiIndex = sorular.findIndex(
+          (soru) => soru.id === aktifSoruId,
+        );
+        const yeniIndex = sorular.findIndex(
+          (soru) => soru.id === hedefSoruId,
+        );
+
+        if (eskiIndex === -1 || yeniIndex === -1 || eskiIndex === yeniIndex) {
+          return form;
+        }
+
+        const yeniSorular = [...sorular];
+        const [tasınanSoru] = yeniSorular.splice(eskiIndex, 1);
+        yeniSorular.splice(yeniIndex, 0, tasınanSoru);
+
+        return {
+          ...form,
+          sorular: yeniSorular,
+        };
+      }),
+    );
+  }
+
   const aktifForm = formlar.find((form) => form.id === aktifFormId);
   const toplamSoru = formlar.reduce(
     (toplam, form) => toplam + (form.sorular || []).length,
@@ -398,6 +429,7 @@ function App() {
                 soruEkle={soruEkle}
                 soruSil={soruSil}
                 soruGuncelle={soruGuncelle}
+                soruSirala={soruSirala}
               />
             </div>
           </div>

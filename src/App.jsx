@@ -44,10 +44,164 @@ function DashboardSidebar({ aktifEkran, ekranDegistir }) {
   );
 }
 
+function getPaylasimFormId() {
+  const eslesenYol = window.location.pathname.match(/^\/f\/([^/]+)\/?$/);
+
+  if (!eslesenYol) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(eslesenYol[1]);
+  } catch {
+    return eslesenYol[1];
+  }
+}
+
+function PaylasilanForm({ form }) {
+  const [cevaplar, setCevaplar] = useState({});
+  const [gonderildi, setGonderildi] = useState(false);
+
+  function cevapGuncelle(soruId, cevap) {
+    setCevaplar((mevcutCevaplar) => ({
+      ...mevcutCevaplar,
+      [soruId]: cevap,
+    }));
+    setGonderildi(false);
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F8F9FC] px-4 py-6 text-[#1E293B] sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-3xl">
+        <header className="mb-6 flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-600 font-bold text-white">
+            F
+          </div>
+          <span className="font-bold tracking-tight text-slate-800">FormLab</span>
+        </header>
+
+        <main className="page-shell space-y-5">
+          <section className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-8">
+            <p className="text-sm font-semibold text-purple-600">Form</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-800">
+              {form.ad}
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Aşağıdaki alanları doldurabilirsiniz.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            {(form.sorular || []).map((soru) => (
+              <div
+                key={soru.id}
+                className="question-card rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-6"
+              >
+                <label
+                  htmlFor={`paylasilan-${soru.id}`}
+                  className="font-medium text-slate-800"
+                >
+                  {soru.baslik}
+                  {soru.zorunlu && <span className="ml-1 text-red-600">*</span>}
+                </label>
+
+                {soru.tur === "paragraf" && (
+                  <textarea
+                    id={`paylasilan-${soru.id}`}
+                    rows="4"
+                    value={cevaplar[soru.id] || ""}
+                    onChange={(event) =>
+                      cevapGuncelle(soru.id, event.target.value)
+                    }
+                    placeholder="Cevabınızı yazınız"
+                    className="mt-3 w-full rounded-xl border border-[#E5E7EB] px-4 py-3 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  />
+                )}
+
+                {soru.tur === "kisa_metin" && (
+                  <input
+                    id={`paylasilan-${soru.id}`}
+                    type="text"
+                    value={cevaplar[soru.id] || ""}
+                    onChange={(event) =>
+                      cevapGuncelle(soru.id, event.target.value)
+                    }
+                    placeholder="Cevabınızı yazınız"
+                    className="mt-3 w-full rounded-xl border border-[#E5E7EB] px-4 py-3 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  />
+                )}
+
+                {soru.tur === "coktan_secmeli" && (
+                  <div className="mt-3 space-y-2">
+                    {(soru.secenekler || []).map((secenek, index) => (
+                      <label
+                        key={`${soru.id}-${index}`}
+                        className="flex items-center gap-2 text-sm text-slate-600"
+                      >
+                        <input
+                          type="radio"
+                          name={`paylasilan-${soru.id}`}
+                          value={secenek}
+                          checked={cevaplar[soru.id] === secenek}
+                          onChange={(event) =>
+                            cevapGuncelle(soru.id, event.target.value)
+                          }
+                          className="h-4 w-4 accent-purple-600"
+                        />
+                        {secenek}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
+
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={() => setGonderildi(true)}
+              className="rounded-xl bg-[#7C3AED] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6D28D9] active:scale-[0.98]"
+            >
+              Gönder
+            </button>
+            {gonderildi && (
+              <p className="text-sm font-medium text-purple-700" role="status">
+                Bu form bir prototiptir. Yanıtlar henüz kaydedilmiyor.
+              </p>
+            )}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function PaylasilanFormHatasi() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#F8F9FC] px-4 py-8 text-center text-[#1E293B]">
+      <div className="page-shell w-full max-w-md rounded-2xl border border-[#E5E7EB] bg-white p-8 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 font-bold text-purple-600">
+          F
+        </div>
+        <h1 className="mt-5 text-2xl font-bold text-slate-800">
+          Form bulunamadı
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Bu form bağlantısı geçersiz olabilir veya form artık mevcut olmayabilir.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [formAdi, setFormAdi] = useState("");
   const [aktifFormId, setAktifFormId] = useState(null);
   const [aktifEkran, setAktifEkran] = useState("ana_sayfa");
+  const [paylasimFormId, setPaylasimFormId] = useState(() =>
+    getPaylasimFormId(),
+  );
   const [yeniFormModal, setYeniFormModal] = useState({
     acik: false,
     ad: "",
@@ -62,6 +216,12 @@ function App() {
   });
   const [formDuzenlemeHata, setFormDuzenlemeHata] = useState("");
   const [removingFormIds, setRemovingFormIds] = useState(new Set());
+  const [paylasimModal, setPaylasimModal] = useState({
+    acik: false,
+    formId: null,
+    closing: false,
+    kopyalandi: false,
+  });
 
   const [formlar, setFormlar] = useState(() => {
     const kayitliFormlar = localStorage.getItem("formlab_formlar");
@@ -70,11 +230,19 @@ function App() {
   });
   const yeniFormInputRef = useRef(null);
   const formDuzenlemeInputRef = useRef(null);
+  const paylasimInputRef = useRef(null);
 
   // Formları LocalStorage'a kaydet
   useEffect(() => {
     localStorage.setItem("formlab_formlar", JSON.stringify(formlar));
   }, [formlar]);
+
+  useEffect(() => {
+    const handlePopState = () => setPaylasimFormId(getPaylasimFormId());
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   function yeniFormModalAc() {
     setYeniFormModal({ acik: true, ad: "", closing: false });
@@ -126,6 +294,66 @@ function App() {
       setFormDuzenleme({ acik: false, formId: null, ad: "", closing: false });
     }, 220);
   }, [formDuzenleme.closing]);
+
+  function formPaylasimAc(formId) {
+    setPaylasimModal({
+      acik: true,
+      formId,
+      closing: false,
+      kopyalandi: false,
+    });
+  }
+
+  const formPaylasimKapat = useCallback(() => {
+    if (paylasimModal.closing) {
+      return;
+    }
+
+    setPaylasimModal((mevcut) => ({ ...mevcut, closing: true }));
+    window.setTimeout(() => {
+      setPaylasimModal({
+        acik: false,
+        formId: null,
+        closing: false,
+        kopyalandi: false,
+      });
+    }, 220);
+  }, [paylasimModal.closing]);
+
+  useEffect(() => {
+    if (!paylasimModal.acik) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        formPaylasimKapat();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    paylasimInputRef.current?.focus();
+    paylasimInputRef.current?.select();
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [paylasimModal.acik, formPaylasimKapat]);
+
+  async function formBaglantisiniKopyala(formId) {
+    const url = `${window.location.origin}/f/${encodeURIComponent(formId)}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setPaylasimModal((mevcut) => ({ ...mevcut, kopyalandi: true }));
+    } catch (error) {
+      console.error("Form bağlantısı kopyalanamadı.", error);
+      setPaylasimModal((mevcut) => ({ ...mevcut, kopyalandi: false }));
+    }
+  }
+
+  function formBaglantisiniAc(formId) {
+    const url = `${window.location.origin}/f/${encodeURIComponent(formId)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   useEffect(() => {
     if (!formDuzenleme.acik) {
@@ -316,6 +544,20 @@ function App() {
       (form.sorular || []).filter((soru) => soru.zorunlu === true).length,
     0,
   );
+  const paylasilanForm = paylasimFormId
+    ? formlar.find((form) => form.id === paylasimFormId)
+    : null;
+  const paylasimModalForm = paylasimModal.formId
+    ? formlar.find((form) => form.id === paylasimModal.formId)
+    : null;
+
+  if (paylasimFormId) {
+    return paylasilanForm ? (
+      <PaylasilanForm form={paylasilanForm} />
+    ) : (
+      <PaylasilanFormHatasi />
+    );
+  }
 
   return (
     <>
@@ -583,6 +825,7 @@ function App() {
                         <div className="mt-6 flex flex-wrap gap-2 border-t border-gray-100 pt-4">
                           <button type="button" onClick={() => formAc(form.id)} className="flex-1 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#6D28D9]">Formu Aç</button>
                           <button type="button" onClick={() => formGuncelle(form.id)} className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100">Düzenle</button>
+                          <button type="button" onClick={() => formPaylasimAc(form.id)} className="rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100">Paylaş</button>
                           <button type="button" onClick={() => formSil(form.id)} className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100">Sil</button>
                         </div>
                       </div>
@@ -659,6 +902,13 @@ function App() {
                               className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100"
                             >
                               Düzenle
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => formPaylasimAc(form.id)}
+                              className="rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                            >
+                              Paylaş
                             </button>
                             <button
                               type="button"
@@ -819,6 +1069,84 @@ function App() {
                 className="rounded-xl bg-[#7C3AED] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6D28D9]"
               >
                 Değişiklikleri Kaydet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {paylasimModal.acik && paylasimModalForm && (
+        <div
+          className={`modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[1px] ${
+            paylasimModal.closing ? "closing" : ""
+          }`}
+          onClick={formPaylasimKapat}
+          role="presentation"
+        >
+          <div
+            className={`modal-panel w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.18)] sm:p-6 ${
+              paylasimModal.closing ? "closing" : ""
+            }`}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="form-paylas-baslik"
+          >
+            <div className="mb-5">
+              <h2
+                id="form-paylas-baslik"
+                className="text-xl font-bold text-slate-800"
+              >
+                Formu Paylaş
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {paylasimModalForm.ad} formunun bağlantısını paylaşın.
+              </p>
+            </div>
+
+            <label htmlFor="form-paylasim-linki" className="sr-only">
+              Form bağlantısı
+            </label>
+            <input
+              id="form-paylasim-linki"
+              ref={paylasimInputRef}
+              type="text"
+              readOnly
+              value={`${window.location.origin}/f/${encodeURIComponent(paylasimModalForm.id)}`}
+              className="w-full rounded-xl border border-[#E5E7EB] bg-slate-50 px-4 py-3 text-sm text-slate-600 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+            />
+
+            <p className="mt-3 rounded-xl bg-purple-50 p-3 text-xs leading-5 text-purple-800">
+              Bu sürümde bağlantı yalnızca formun kayıtlı olduğu tarayıcıda çalışır.
+            </p>
+
+            {paylasimModal.kopyalandi && (
+              <p className="mt-3 text-sm font-medium text-emerald-600" role="status">
+                Bağlantı panoya kopyalandı.
+              </p>
+            )}
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={formPaylasimKapat}
+                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                Kapat
+              </button>
+              <button
+                type="button"
+                onClick={() => formBaglantisiniAc(paylasimModalForm.id)}
+                className="rounded-xl bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-700 transition hover:bg-purple-100"
+              >
+                Formu Aç
+              </button>
+              <button
+                type="button"
+                onClick={() => formBaglantisiniKopyala(paylasimModalForm.id)}
+                className="rounded-xl bg-[#7C3AED] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6D28D9]"
+              >
+                Bağlantıyı Kopyala
               </button>
             </div>
           </div>

@@ -15,6 +15,119 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+function FormOnizleme({ form }) {
+  const [cevaplar, setCevaplar] = useState({});
+  const [gonderildi, setGonderildi] = useState(false);
+  const sorular = form.sorular || [];
+
+  function cevapGuncelle(soruId, cevap) {
+    setCevaplar((mevcutCevaplar) => ({
+      ...mevcutCevaplar,
+      [soruId]: cevap,
+    }));
+    setGonderildi(false);
+  }
+
+  return (
+    <div className="page-shell space-y-5 rounded-xl border border-gray-200 bg-slate-50 p-5 transition-opacity duration-200 sm:p-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-medium text-purple-600">Form önizleme</p>
+        <h3 className="mt-1 text-2xl font-bold text-gray-800">{form.ad}</h3>
+        <p className="mt-2 text-sm text-gray-500">
+          Bu ekran, formu dolduracak kişilerin göreceği görünümü gösterir.
+        </p>
+      </div>
+
+      {sorular.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center">
+          <p className="text-gray-500">Önizlenecek soru bulunmuyor.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {sorular.map((soru) => (
+            <div
+              key={soru.id}
+              className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+            >
+              <label
+                htmlFor={`onizleme-${soru.id}`}
+                className="font-medium text-gray-800"
+              >
+                {soru.baslik}
+                {soru.zorunlu && <span className="ml-1 text-red-600">*</span>}
+              </label>
+
+              {soru.tur === "paragraf" && (
+                <textarea
+                  id={`onizleme-${soru.id}`}
+                  rows="4"
+                  value={cevaplar[soru.id] || ""}
+                  onChange={(event) =>
+                    cevapGuncelle(soru.id, event.target.value)
+                  }
+                  placeholder="Cevabınızı yazınız"
+                  className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                />
+              )}
+
+              {soru.tur === "kisa_metin" && (
+                <input
+                  id={`onizleme-${soru.id}`}
+                  type="text"
+                  value={cevaplar[soru.id] || ""}
+                  onChange={(event) =>
+                    cevapGuncelle(soru.id, event.target.value)
+                  }
+                  placeholder="Cevabınızı yazınız"
+                  className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                />
+              )}
+
+              {soru.tur === "coktan_secmeli" && (
+                <div className="mt-3 space-y-2">
+                  {(soru.secenekler || []).map((secenek, index) => (
+                    <label
+                      key={`${soru.id}-${index}`}
+                      className="flex items-center gap-2 text-sm text-gray-600"
+                    >
+                      <input
+                        type="radio"
+                        name={`onizleme-${soru.id}`}
+                        value={secenek}
+                        checked={cevaplar[soru.id] === secenek}
+                        onChange={(event) =>
+                          cevapGuncelle(soru.id, event.target.value)
+                        }
+                        className="h-4 w-4 accent-purple-600"
+                      />
+                      {secenek}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          onClick={() => setGonderildi(true)}
+          className="rounded-lg bg-purple-600 px-5 py-3 font-medium text-white transition hover:bg-purple-700 active:scale-[0.98]"
+        >
+          Gönder
+        </button>
+        {gonderildi && (
+          <p className="text-sm font-medium text-purple-700" role="status">
+            Bu bir önizlemedir. Yanıtlar kaydedilmedi.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SortableSoruKarti({
   soru,
   duzenlenenSoruId,
@@ -208,6 +321,7 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
   const [duzenlenenBaslik, setDuzenlenenBaslik] = useState("");
   const [duzenlenenSecenekler, setDuzenlenenSecenekler] = useState([]);
   const [duzenlemeHatasi, setDuzenlemeHatasi] = useState("");
+  const [gorunum, setGorunum] = useState("duzenleme");
   const sorular = form.sorular || [];
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -380,16 +494,54 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
           </h2>
         </div>
 
-        <button
-          type="button"
-          onClick={geriDon}
-          className="rounded-lg bg-purple-50 px-4 py-2 font-medium text-purple-700 transition hover:bg-purple-100"
-        >
-          Formlarıma Dön
-        </button>
+        <div className="flex flex-col gap-3 sm:items-end">
+          <button
+            type="button"
+            onClick={geriDon}
+            className="rounded-lg bg-purple-50 px-4 py-2 font-medium text-purple-700 transition hover:bg-purple-100"
+          >
+            Formlarıma Dön
+          </button>
+          <div
+            className="inline-flex rounded-lg bg-slate-100 p-1"
+            role="tablist"
+            aria-label="Form görünümü"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={gorunum === "duzenleme"}
+              onClick={() => setGorunum("duzenleme")}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                gorunum === "duzenleme"
+                  ? "bg-white text-purple-700 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Düzenleme
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={gorunum === "onizleme"}
+              onClick={() => setGorunum("onizleme")}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                gorunum === "onizleme"
+                  ? "bg-white text-purple-700 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Önizleme
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-slate-50 p-5 sm:p-6">
+      {gorunum === "onizleme" ? (
+        <FormOnizleme key="onizleme" form={form} />
+      ) : (
+      <>
+      <div key="duzenleme" className="page-shell rounded-xl border border-gray-200 bg-slate-50 p-5 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-800">Soru Ekle</h3>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -502,6 +654,8 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
           </DndContext>
         )}
       </div>
+      </>
+      )}
     </section>
   );
 }

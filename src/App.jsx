@@ -195,6 +195,97 @@ function PaylasilanFormHatasi() {
   );
 }
 
+const FORM_SABLONLARI = [
+  {
+    id: "bos_form",
+    ad: "Boş Form",
+    aciklama: "Kendi sorularınızı sıfırdan oluşturun.",
+    ikon: "＋",
+    sorular: [],
+  },
+  {
+    id: "etkinlik_kayit",
+    ad: "Etkinlik Kayıt Formu",
+    aciklama: "Katılımcı bilgilerini hızlıca toplayın.",
+    ikon: "✦",
+    sorular: [
+      { baslik: "Adınız ve soyadınız", tur: "kisa_metin", zorunlu: true },
+      { baslik: "E-posta adresiniz", tur: "kisa_metin", zorunlu: true },
+      { baslik: "Etkinliğe nasıl katılacaksınız?", tur: "coktan_secmeli", zorunlu: true, secenekler: ["Yüz yüze", "Çevrim içi"] },
+      { baslik: "Varsa özel isteklerinizi paylaşın", tur: "paragraf", zorunlu: false },
+    ],
+  },
+  {
+    id: "geri_bildirim",
+    ad: "Geri Bildirim Formu",
+    aciklama: "Deneyimleri ve önerileri anlamlandırın.",
+    ikon: "♡",
+    sorular: [
+      { baslik: "Genel deneyiminizi nasıl değerlendirirsiniz?", tur: "coktan_secmeli", zorunlu: true, secenekler: ["Çok iyi", "İyi", "Orta", "Geliştirilmeli"] },
+      { baslik: "En beğendiğiniz şey neydi?", tur: "kisa_metin", zorunlu: false },
+      { baslik: "Deneyiminizi geliştirmek için öneriniz var mı?", tur: "paragraf", zorunlu: false },
+    ],
+  },
+  {
+    id: "is_basvurusu",
+    ad: "İş Başvuru Formu",
+    aciklama: "Aday bilgilerini düzenli şekilde toplayın.",
+    ikon: "◆",
+    sorular: [
+      { baslik: "Adınız ve soyadınız", tur: "kisa_metin", zorunlu: true },
+      { baslik: "E-posta adresiniz", tur: "kisa_metin", zorunlu: true },
+      { baslik: "Başvurduğunuz pozisyon", tur: "kisa_metin", zorunlu: true },
+      { baslik: "Kendinizden ve deneyimlerinizden bahsedin", tur: "paragraf", zorunlu: true },
+    ],
+  },
+  {
+    id: "anket_formu",
+    ad: "Anket Formu",
+    aciklama: "Görüşleri ve memnuniyet düzeyini ölçün.",
+    ikon: "☷",
+    sorular: [
+      { baslik: "Adınız Soyadınız", tur: "kisa_metin", zorunlu: false },
+      {
+        baslik: "Yaş Aralığınız",
+        tur: "coktan_secmeli",
+        zorunlu: false,
+        secenekler: ["18 yaş altı", "18–24", "25–34", "35–44", "45 ve üzeri"],
+      },
+      {
+        baslik: "Hizmetimizi Nasıl Değerlendirirsiniz?",
+        tur: "coktan_secmeli",
+        zorunlu: false,
+        secenekler: ["Çok iyi", "İyi", "Orta", "Kötü", "Çok kötü"],
+      },
+      {
+        baslik: "Hizmetimizi Başkalarına Önerir misiniz?",
+        tur: "coktan_secmeli",
+        zorunlu: false,
+        secenekler: ["Evet", "Hayır", "Kararsızım"],
+      },
+      { baslik: "Eklemek İstedikleriniz", tur: "paragraf", zorunlu: false },
+    ],
+  },
+  {
+    id: "iletisim_formu",
+    ad: "İletişim Formu",
+    aciklama: "İletişim taleplerini kolayca toplayın.",
+    ikon: "✉",
+    sorular: [
+      { baslik: "Adınız Soyadınız", tur: "kisa_metin", zorunlu: true },
+      { baslik: "E-posta Adresiniz", tur: "kisa_metin", zorunlu: true },
+      { baslik: "Konu", tur: "kisa_metin", zorunlu: true },
+      { baslik: "Mesajınız", tur: "paragraf", zorunlu: true },
+      {
+        baslik: "Size Nasıl Ulaşalım?",
+        tur: "coktan_secmeli",
+        zorunlu: false,
+        secenekler: ["E-posta", "Telefon"],
+      },
+    ],
+  },
+];
+
 function App() {
   const [formAdi, setFormAdi] = useState("");
   const [aktifFormId, setAktifFormId] = useState(null);
@@ -205,6 +296,7 @@ function App() {
   const [yeniFormModal, setYeniFormModal] = useState({
     acik: false,
     ad: "",
+    sablonId: "bos_form",
     closing: false,
   });
   const [yeniFormHata, setYeniFormHata] = useState("");
@@ -245,9 +337,14 @@ function App() {
   }, []);
 
   function yeniFormModalAc() {
-    setYeniFormModal({ acik: true, ad: "", closing: false });
+    setYeniFormModal({
+      acik: true,
+      ad: "Boş Form",
+      sablonId: "bos_form",
+      closing: false,
+    });
     setYeniFormHata("");
-    setFormAdi("");
+    setFormAdi("Boş Form");
   }
 
   const yeniFormModalKapat = useCallback(() => {
@@ -260,7 +357,12 @@ function App() {
     setFormAdi("");
 
     window.setTimeout(() => {
-      setYeniFormModal({ acik: false, ad: "", closing: false });
+      setYeniFormModal({
+        acik: false,
+        ad: "",
+        sablonId: "bos_form",
+        closing: false,
+      });
     }, 220);
   }, [yeniFormModal.closing]);
 
@@ -374,7 +476,10 @@ function App() {
   }, [formDuzenleme.acik, formDuzenlemeKapat]);
 
   // Yeni form oluştur
-  function formEkle(yeniAdMetni = formAdi) {
+  function formEkle(
+    yeniAdMetni = formAdi,
+    sablonId = yeniFormModal.sablonId,
+  ) {
     const ad = (yeniAdMetni ?? "").trim();
 
     if (!ad) {
@@ -382,16 +487,28 @@ function App() {
       return;
     }
 
+    const secilenSablon = FORM_SABLONLARI.find(
+      (sablon) => sablon.id === sablonId,
+    ) || FORM_SABLONLARI[0];
     const yeniForm = {
       id: crypto.randomUUID(),
       ad,
-      sorular: [],
+      sorular: secilenSablon.sorular.map((soru) => ({
+        ...soru,
+        id: crypto.randomUUID(),
+        ...(soru.secenekler ? { secenekler: [...soru.secenekler] } : {}),
+      })),
     };
 
     setFormlar((mevcutFormlar) => [...mevcutFormlar, yeniForm]);
     setAktifFormId(yeniForm.id);
     setFormAdi("");
-    setYeniFormModal({ acik: false, ad: "", closing: false });
+    setYeniFormModal({
+      acik: false,
+      ad: "",
+      sablonId: "bos_form",
+      closing: false,
+    });
     setYeniFormHata("");
   }
 
@@ -938,7 +1055,7 @@ function App() {
           role="presentation"
         >
           <div
-            className={`modal-panel w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.18)] sm:p-6 ${
+            className={`modal-panel flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.18)] sm:p-6 ${
               yeniFormModal.closing ? "closing" : ""
             }`}
             onClick={(event) => event.stopPropagation()}
@@ -946,7 +1063,7 @@ function App() {
             aria-modal="true"
             aria-labelledby="yeni-form-baslik"
           >
-            <div className="mb-5">
+            <div className="mb-5 shrink-0">
               <h2
                 id="yeni-form-baslik"
                 className="text-xl font-bold text-slate-800"
@@ -956,6 +1073,59 @@ function App() {
               <p className="mt-1 text-sm text-slate-500">
                 Formunuz için bir isim girin.
               </p>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              <p className="mb-3 text-sm font-semibold text-slate-700">
+                Bir şablon seçin
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {FORM_SABLONLARI.map((sablon) => {
+                  const secili = yeniFormModal.sablonId === sablon.id;
+
+                  return (
+                    <button
+                      key={sablon.id}
+                      type="button"
+                      onClick={() =>
+                        (() => {
+                          setYeniFormModal((mevcut) => ({
+                            ...mevcut,
+                            sablonId: sablon.id,
+                            ad: sablon.ad,
+                          }));
+                          setFormAdi(sablon.ad);
+                          setYeniFormHata("");
+                        })()
+                      }
+                      className={`rounded-xl border p-4 text-left transition-all duration-200 ${
+                        secili
+                          ? "border-purple-500 bg-purple-50 shadow-sm ring-2 ring-purple-100"
+                          : "border-gray-200 bg-white hover:border-purple-200 hover:bg-purple-50/40"
+                      }`}
+                      aria-pressed={secili}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${
+                            secili
+                              ? "bg-purple-600 text-white"
+                              : "bg-purple-50 text-purple-600"
+                          }`}
+                        >
+                          {sablon.ikon}
+                        </span>
+                        <span className="font-semibold text-slate-800">
+                          {sablon.ad}
+                        </span>
+                      </span>
+                      <span className="mt-3 block text-xs leading-5 text-slate-500">
+                        {sablon.aciklama}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <label htmlFor="yeni-form-input" className="sr-only">
@@ -968,6 +1138,10 @@ function App() {
               value={formAdi}
               onChange={(event) => {
                 setFormAdi(event.target.value);
+                setYeniFormModal((mevcut) => ({
+                  ...mevcut,
+                  ad: event.target.value,
+                }));
                 if (yeniFormHata) {
                   setYeniFormHata("");
                 }
@@ -992,7 +1166,7 @@ function App() {
               </button>
               <button
                 type="button"
-                onClick={() => formEkle(formAdi)}
+                onClick={() => formEkle(formAdi, yeniFormModal.sablonId)}
                 className="rounded-xl bg-[#7C3AED] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6D28D9]"
               >
                 Form Oluştur

@@ -389,7 +389,6 @@ function App() {
   );
   const [yeniFormModal, setYeniFormModal] = useState({
     acik: false,
-    ad: "",
     sablonId: "bos_form",
     closing: false,
   });
@@ -449,7 +448,6 @@ function App() {
   function yeniFormModalAc() {
     setYeniFormModal({
       acik: true,
-      ad: "Boş Form",
       sablonId: "bos_form",
       closing: false,
     });
@@ -469,7 +467,6 @@ function App() {
     window.setTimeout(() => {
       setYeniFormModal({
         acik: false,
-        ad: "",
         sablonId: "bos_form",
         closing: false,
       });
@@ -617,7 +614,6 @@ function App() {
     setFormAdi("");
     setYeniFormModal({
       acik: false,
-      ad: "",
       sablonId: "bos_form",
       closing: false,
     });
@@ -972,8 +968,7 @@ function App() {
 
         .form-card,
         .question-card,
-        .modal-panel,
-        .surface-card {
+        .modal-panel {
           transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, opacity 200ms ease;
         }
 
@@ -992,10 +987,6 @@ function App() {
 
         .question-card {
           animation: cardIn 220ms ease-out both;
-        }
-
-        .question-card.is-removing {
-          animation: cardOut 180ms ease-in forwards;
         }
 
         .modal-backdrop {
@@ -1438,7 +1429,6 @@ function App() {
                           setYeniFormModal((mevcut) => ({
                             ...mevcut,
                             sablonId: sablon.id,
-                            ad: sablon.ad,
                           }));
                           setFormAdi(sablon.ad);
                           setYeniFormHata("");
@@ -1484,10 +1474,6 @@ function App() {
               value={formAdi}
               onChange={(event) => {
                 setFormAdi(event.target.value);
-                setYeniFormModal((mevcut) => ({
-                  ...mevcut,
-                  ad: event.target.value,
-                }));
                 if (yeniFormHata) {
                   setYeniFormHata("");
                 }

@@ -380,6 +380,8 @@ function App() {
   });
   const [formDuzenlemeHata, setFormDuzenlemeHata] = useState("");
   const [removingFormIds, setRemovingFormIds] = useState(new Set());
+  const [formCogaltilmaBildirimi, setFormCogaltilmaBildirimi] =
+    useState(false);
   const [paylasimModal, setPaylasimModal] = useState({
     acik: false,
     formId: null,
@@ -600,6 +602,29 @@ function App() {
         return sonraki;
       });
     }, 180);
+  }
+
+  function formCogaltil(formId) {
+    const kaynakForm = formlar.find((form) => form.id === formId);
+
+    if (!kaynakForm) {
+      return;
+    }
+
+    const kopyaForm = structuredClone(kaynakForm);
+    kopyaForm.id = crypto.randomUUID();
+    kopyaForm.ad = `${kaynakForm.ad} (Kopya)`;
+    kopyaForm.sorular = (kaynakForm.sorular || []).map((soru) => ({
+      ...soru,
+      id: crypto.randomUUID(),
+      ...(soru.secenekler
+        ? { secenekler: [...soru.secenekler] }
+        : {}),
+    }));
+
+    setFormlar((mevcutFormlar) => [...mevcutFormlar, kopyaForm]);
+    setFormCogaltilmaBildirimi(true);
+    window.setTimeout(() => setFormCogaltilmaBildirimi(false), 2200);
   }
 
   // Form adını güncelle
@@ -1026,6 +1051,7 @@ function App() {
                           <button type="button" onClick={() => formAc(form.id)} className="flex-1 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#6D28D9]">Formu Aç</button>
                           <button type="button" onClick={() => formGuncelle(form.id)} className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100">Düzenle</button>
                           <button type="button" onClick={() => formPaylasimAc(form.id)} className="rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100">Paylaş</button>
+                          <button type="button" onClick={() => formCogaltil(form.id)} className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100">Çoğalt</button>
                           <button type="button" onClick={() => formSil(form.id)} className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100">Sil</button>
                         </div>
                       </div>
@@ -1112,6 +1138,13 @@ function App() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => formCogaltil(form.id)}
+                              className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100"
+                            >
+                              Çoğalt
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => formSil(form.id)}
                               className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
                             >
@@ -1126,6 +1159,15 @@ function App() {
               )}
             </div>
           </main>
+        </div>
+      )}
+
+      {formCogaltilmaBildirimi && (
+        <div
+          className="fixed bottom-5 right-5 z-40 rounded-xl border border-emerald-100 bg-white px-4 py-3 text-sm font-medium text-emerald-700 shadow-lg"
+          role="status"
+        >
+          Form çoğaltıldı
         </div>
       )}
 

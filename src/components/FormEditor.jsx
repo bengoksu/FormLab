@@ -751,24 +751,27 @@ function FormEditor({
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div>
-          <p className="text-sm font-medium text-purple-600">Form düzenleyici</p>
-          <h2 className="mt-1 text-2xl font-bold text-gray-800 sm:text-3xl">
+      <div className="flex flex-col gap-5 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-7 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-purple-600">Form çalışma alanı</p>
+          <h2 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">
             {form.ad}
           </h2>
+          <p className="mt-2 max-w-2xl text-sm text-slate-500">
+            Sorularınızı düzenleyin, formunuzu önizleyin ve ayarlarını yönetin.
+          </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:items-end">
+        <div className="flex shrink-0 flex-col gap-3 lg:items-end">
           <button
             type="button"
             onClick={geriDon}
-            className="rounded-lg bg-purple-50 px-4 py-2 font-medium text-purple-700 transition hover:bg-purple-100"
+            className="self-start rounded-lg bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100 lg:self-auto"
           >
             Formlarıma Dön
           </button>
           <div
-            className="inline-flex rounded-lg bg-slate-100 p-1"
+            className="flex max-w-full overflow-x-auto rounded-xl bg-slate-100 p-1"
             role="tablist"
             aria-label="Form görünümü"
           >
@@ -777,7 +780,7 @@ function FormEditor({
               role="tab"
               aria-selected={gorunum === "duzenleme"}
               onClick={() => setGorunum("duzenleme")}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
                 gorunum === "duzenleme"
                   ? "bg-white text-purple-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
@@ -790,7 +793,7 @@ function FormEditor({
               role="tab"
               aria-selected={gorunum === "onizleme"}
               onClick={() => setGorunum("onizleme")}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
                 gorunum === "onizleme"
                   ? "bg-white text-purple-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
@@ -803,7 +806,7 @@ function FormEditor({
               role="tab"
               aria-selected={gorunum === "ayarlar"}
               onClick={() => setGorunum("ayarlar")}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
                 gorunum === "ayarlar"
                   ? "bg-white text-purple-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
@@ -823,11 +826,22 @@ function FormEditor({
       ) : gorunum === "onizleme" ? (
         <FormOnizleme key="onizleme" form={form} />
       ) : (
-      <>
-      <div key="duzenleme" className="page-shell rounded-xl border border-gray-200 bg-slate-50 p-5 sm:p-6">
-        <h3 className="text-lg font-semibold text-gray-800">Soru Ekle</h3>
+      <div
+        key="duzenleme"
+        className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]"
+      >
+      <div className="page-shell min-w-0 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-7">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
+              İçerik
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-slate-800">Soru ekle</h3>
+          </div>
+          <p className="text-sm text-slate-500">Formunuza yeni bir alan ekleyin.</p>
+        </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid min-w-0 gap-3">
           <input
             type="text"
             placeholder="Soru başlığını giriniz"
@@ -894,13 +908,24 @@ function FormEditor({
         <button
           type="button"
           onClick={soruOlustur}
-          className="mt-4 rounded-lg bg-purple-600 px-5 py-3 font-medium text-white hover:bg-purple-700"
+          className="mt-4 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 active:scale-[0.98]"
         >
           Soru Ekle
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="min-w-0 space-y-3">
+        <div className="flex items-center justify-between rounded-2xl border border-[#E5E7EB] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:px-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
+              İçerik
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-slate-800">Sorularım</h3>
+          </div>
+          <span className="rounded-full bg-purple-50 px-3 py-1 text-sm font-semibold text-purple-700">
+            {sorular.length} soru
+          </span>
+        </div>
         {sorular.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center">
             <p className="text-gray-500">Henüz soru eklenmedi.</p>
@@ -942,7 +967,7 @@ function FormEditor({
           </DndContext>
         )}
       </div>
-      </>
+      </div>
       )}
     </section>
   );

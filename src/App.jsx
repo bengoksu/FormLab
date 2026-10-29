@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import Header from "./components/Header";
 import FormEditor from "./components/FormEditor";
 
 const DESTEKLENEN_SORU_TURLERI = new Set([
@@ -1051,22 +1050,27 @@ function App() {
       `}</style>
       <div className="min-h-screen bg-[#F8F9FC] text-[#1E293B]">
         {aktifForm ? (
-          <div key={`editor-${aktifForm.id}`} className="page-shell mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-            <div className="surface-card rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-              <Header
-                baslik="FormLab"
-                aciklama="Hayalindeki formları kolayca tasarla."
-              />
-              <FormEditor
-                form={aktifForm}
-                geriDon={() => ekranDegistir("formlar")}
-                soruEkle={soruEkle}
-                soruSil={soruSil}
-                soruGuncelle={soruGuncelle}
-                soruSirala={soruSirala}
-                formAyarlariGuncelle={formAyarlariGuncelle}
-              />
-            </div>
+          <div
+            key={`editor-${aktifForm.id}`}
+            className="page-shell mx-auto flex min-h-screen max-w-[1440px]"
+          >
+            <DashboardSidebar
+              aktifEkran="formlar"
+              ekranDegistir={ekranDegistir}
+            />
+            <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-10">
+              <div className="mx-auto max-w-6xl">
+                <FormEditor
+                  form={aktifForm}
+                  geriDon={() => ekranDegistir("formlar")}
+                  soruEkle={soruEkle}
+                  soruSil={soruSil}
+                  soruGuncelle={soruGuncelle}
+                  soruSirala={soruSirala}
+                  formAyarlariGuncelle={formAyarlariGuncelle}
+                />
+              </div>
+            </main>
           </div>
         ) : (
         <div key={`dashboard-${aktifEkran}`} className="page-shell mx-auto flex min-h-screen max-w-[1440px]">

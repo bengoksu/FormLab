@@ -61,6 +61,7 @@ function getPaylasimFormId() {
 function PaylasilanForm({ form }) {
   const [cevaplar, setCevaplar] = useState({});
   const [gonderildi, setGonderildi] = useState(false);
+  const temaRengi = form.temaRengi || "#7C3AED";
 
   function cevapGuncelle(soruId, cevap) {
     setCevaplar((mevcutCevaplar) => ({
@@ -90,14 +91,23 @@ function PaylasilanForm({ form }) {
         </header>
 
         <main className="page-shell space-y-5">
-          <section className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-8">
-            <p className="text-sm font-semibold text-purple-600">Form</p>
+          <section
+            className="rounded-2xl border border-[#E5E7EB] border-t-4 bg-white p-6 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-8"
+            style={{ borderTopColor: temaRengi }}
+          >
+            <p className="text-sm font-semibold" style={{ color: temaRengi }}>
+              Form
+            </p>
             <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-800">
               {form.ad}
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Aşağıdaki alanları doldurabilirsiniz.
-            </p>
+            {form.aciklama ? (
+              <p className="mt-2 text-sm text-slate-600">{form.aciklama}</p>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">
+                Aşağıdaki alanları doldurabilirsiniz.
+              </p>
+            )}
           </section>
 
           <section className="space-y-4">
@@ -222,7 +232,8 @@ function PaylasilanForm({ form }) {
             <button
               type="button"
               onClick={() => setGonderildi(true)}
-              className="rounded-xl bg-[#7C3AED] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6D28D9] active:scale-[0.98]"
+              className="rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:brightness-90 active:scale-[0.98]"
+              style={{ backgroundColor: temaRengi }}
             >
               Gönder
             </button>
@@ -554,6 +565,8 @@ function App() {
     const yeniForm = {
       id: crypto.randomUUID(),
       ad,
+      aciklama: "",
+      temaRengi: "#7C3AED",
       sorular: secilenSablon.sorular.map((soru) => ({
         ...soru,
         id: crypto.randomUUID(),
@@ -645,6 +658,14 @@ function App() {
           sorular: [...(form.sorular || []), yeniSoru],
         };
       }),
+    );
+  }
+
+  function formAyarlariGuncelle(formId, degisiklikler) {
+    setFormlar((mevcutFormlar) =>
+      mevcutFormlar.map((form) =>
+        form.id === formId ? { ...form, ...degisiklikler } : form,
+      ),
     );
   }
 
@@ -850,6 +871,7 @@ function App() {
                 soruSil={soruSil}
                 soruGuncelle={soruGuncelle}
                 soruSirala={soruSirala}
+                formAyarlariGuncelle={formAyarlariGuncelle}
               />
             </div>
           </div>

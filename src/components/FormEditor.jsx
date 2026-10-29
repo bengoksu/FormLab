@@ -15,10 +15,21 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+const VARSAYILAN_TEMA_RENGI = "#7C3AED";
+const TEMA_RENKLERI = [
+  { ad: "Mor", deger: "#7C3AED" },
+  { ad: "Mavi", deger: "#2563EB" },
+  { ad: "Yeşil", deger: "#059669" },
+  { ad: "Pembe", deger: "#E11D48" },
+  { ad: "Turuncu", deger: "#EA580C" },
+  { ad: "Koyu lacivert", deger: "#0F172A" },
+];
+
 function FormOnizleme({ form }) {
   const [cevaplar, setCevaplar] = useState({});
   const [gonderildi, setGonderildi] = useState(false);
   const sorular = form.sorular || [];
+  const temaRengi = form.temaRengi || VARSAYILAN_TEMA_RENGI;
 
   function cevapGuncelle(soruId, cevap) {
     setCevaplar((mevcutCevaplar) => ({
@@ -39,12 +50,21 @@ function FormOnizleme({ form }) {
 
   return (
     <div className="page-shell space-y-5 rounded-xl border border-gray-200 bg-slate-50 p-5 transition-opacity duration-200 sm:p-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <p className="text-sm font-medium text-purple-600">Form önizleme</p>
-        <h3 className="mt-1 text-2xl font-bold text-gray-800">{form.ad}</h3>
-        <p className="mt-2 text-sm text-gray-500">
-          Bu ekran, formu dolduracak kişilerin göreceği görünümü gösterir.
+      <div
+        className="rounded-xl border border-gray-200 border-t-4 bg-white p-5 shadow-sm sm:p-6"
+        style={{ borderTopColor: temaRengi }}
+      >
+        <p className="text-sm font-medium" style={{ color: temaRengi }}>
+          Form önizleme
         </p>
+        <h3 className="mt-1 text-2xl font-bold text-gray-800">{form.ad}</h3>
+        {form.aciklama ? (
+          <p className="mt-2 text-sm text-gray-600">{form.aciklama}</p>
+        ) : (
+          <p className="mt-2 text-sm text-gray-500">
+            Bu ekran, formu dolduracak kişilerin göreceği görünümü gösterir.
+          </p>
+        )}
       </div>
 
       {sorular.length === 0 ? (
@@ -175,7 +195,8 @@ function FormOnizleme({ form }) {
         <button
           type="button"
           onClick={() => setGonderildi(true)}
-          className="rounded-lg bg-purple-600 px-5 py-3 font-medium text-white transition hover:bg-purple-700 active:scale-[0.98]"
+          className="rounded-lg px-5 py-3 font-medium text-white transition hover:brightness-90 active:scale-[0.98]"
+          style={{ backgroundColor: temaRengi }}
         >
           Gönder
         </button>
@@ -184,6 +205,120 @@ function FormOnizleme({ form }) {
             Bu bir önizlemedir. Yanıtlar kaydedilmedi.
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+function FormAyarlari({ form, formAyarlariGuncelle }) {
+  const [taslak, setTaslak] = useState({
+    aciklama: form.aciklama || "",
+    temaRengi: form.temaRengi || VARSAYILAN_TEMA_RENGI,
+  });
+  const [kaydedildi, setKaydedildi] = useState(false);
+  const temaRengi = taslak.temaRengi;
+  const kaydedilecekDegisiklikVar =
+    taslak.aciklama !== (form.aciklama || "") ||
+    taslak.temaRengi !== (form.temaRengi || VARSAYILAN_TEMA_RENGI);
+
+  return (
+    <div className="page-shell space-y-5 rounded-xl border border-gray-200 bg-slate-50 p-5 sm:p-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-medium" style={{ color: temaRengi }}>
+          Form ayarları
+        </p>
+        <h3 className="mt-1 text-2xl font-bold text-gray-800">
+          Form görünümünü özelleştirin
+        </h3>
+        <p className="mt-2 text-sm text-gray-500">
+          Açıklama ve tema rengi değişikliklerini kaydetmeden önce gözden geçirin.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <label
+          htmlFor="form-aciklama"
+          className="text-sm font-semibold text-gray-800"
+        >
+          Form açıklaması
+        </label>
+        <textarea
+          id="form-aciklama"
+          rows="4"
+          value={taslak.aciklama}
+          onChange={(event) => {
+            setTaslak((mevcut) => ({
+              ...mevcut,
+              aciklama: event.target.value,
+            }));
+            setKaydedildi(false);
+          }}
+          placeholder="Formunuz hakkında kısa bir açıklama yazın"
+          className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+        />
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-semibold text-gray-800">Tema rengi</p>
+        <div
+          className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3"
+          role="radiogroup"
+          aria-label="Form tema rengi"
+        >
+          {TEMA_RENKLERI.map((tema) => {
+            const secili = temaRengi === tema.deger;
+
+            return (
+              <button
+                key={tema.deger}
+                type="button"
+                role="radio"
+                aria-checked={secili}
+                onClick={() => {
+                  setTaslak((mevcut) => ({
+                    ...mevcut,
+                    temaRengi: tema.deger,
+                  }));
+                  setKaydedildi(false);
+                }}
+                className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left text-sm transition ${
+                  secili
+                    ? "border-gray-500 ring-2 ring-gray-200"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                <span
+                  className="h-6 w-6 shrink-0 rounded-full border border-white shadow-sm"
+                  style={{ backgroundColor: tema.deger }}
+                  aria-hidden="true"
+                />
+                <span className="font-medium text-gray-700">{tema.ad}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col items-end gap-3 sm:flex-row sm:justify-end">
+        {kaydedildi && !kaydedilecekDegisiklikVar && (
+          <p className="text-sm font-medium text-emerald-600" role="status">
+            Değişiklikler kaydedildi
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={!kaydedilecekDegisiklikVar}
+          onClick={() => {
+            formAyarlariGuncelle(form.id, {
+              aciklama: taslak.aciklama,
+              temaRengi: taslak.temaRengi,
+            });
+            setKaydedildi(true);
+          }}
+          className="rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Değişiklikleri Kaydet
+        </button>
       </div>
     </div>
   );
@@ -382,7 +517,15 @@ function SortableSoruKarti({
   );
 }
 
-function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala }) {
+function FormEditor({
+  form,
+  geriDon,
+  soruEkle,
+  soruSil,
+  soruGuncelle,
+  soruSirala,
+  formAyarlariGuncelle,
+}) {
   const [soruBasligi, setSoruBasligi] = useState("");
   const [soruTuru, setSoruTuru] = useState("kisa_metin");
   const [secenekler, setSecenekler] = useState(["", ""]);
@@ -655,11 +798,29 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
             >
               Önizleme
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={gorunum === "ayarlar"}
+              onClick={() => setGorunum("ayarlar")}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                gorunum === "ayarlar"
+                  ? "bg-white text-purple-700 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Ayarlar
+            </button>
           </div>
         </div>
       </div>
 
-      {gorunum === "onizleme" ? (
+      {gorunum === "ayarlar" ? (
+        <FormAyarlari
+          form={form}
+          formAyarlariGuncelle={formAyarlariGuncelle}
+        />
+      ) : gorunum === "onizleme" ? (
         <FormOnizleme key="onizleme" form={form} />
       ) : (
       <>

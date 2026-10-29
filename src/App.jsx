@@ -140,6 +140,18 @@ function PaylasilanForm({ form }) {
                   />
                 )}
 
+                {soru.tur === "tarih" && (
+                  <input
+                    id={`paylasilan-${soru.id}`}
+                    type="date"
+                    value={cevaplar[soru.id] || ""}
+                    onChange={(event) =>
+                      cevapGuncelle(soru.id, event.target.value)
+                    }
+                    className="mt-3 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  />
+                )}
+
                 {soru.tur === "coktan_secmeli" && (
                   <div className="mt-3 space-y-2">
                     {(soru.secenekler || []).map((secenek, index) => (

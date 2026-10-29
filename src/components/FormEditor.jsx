@@ -92,6 +92,18 @@ function FormOnizleme({ form }) {
                 />
               )}
 
+              {soru.tur === "tarih" && (
+                <input
+                  id={`onizleme-${soru.id}`}
+                  type="date"
+                  value={cevaplar[soru.id] || ""}
+                  onChange={(event) =>
+                    cevapGuncelle(soru.id, event.target.value)
+                  }
+                  className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                />
+              )}
+
               {soru.tur === "coktan_secmeli" && (
                 <div className="mt-3 space-y-2">
                   {(soru.secenekler || []).map((secenek, index) => (
@@ -328,6 +340,8 @@ function SortableSoruKarti({
                         ? "Onay kutuları"
                         : soru.tur === "acilir_liste"
                           ? "Açılır liste"
+                          : soru.tur === "tarih"
+                            ? "Tarih"
                           : "Kısa metin"}
                 </p>
                 {soruCevapAlaniGoster(soru)}
@@ -533,6 +547,16 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
       );
     }
 
+    if (soru.tur === "tarih") {
+      return (
+        <input
+          type="date"
+          readOnly
+          className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
+        />
+      );
+    }
+
     if (
       soru.tur === "coktan_secmeli" ||
       soru.tur === "onay_kutulari" ||
@@ -661,6 +685,7 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
             <option value="coktan_secmeli">Çoktan Seçmeli</option>
             <option value="onay_kutulari">Onay Kutuları</option>
             <option value="acilir_liste">Açılır Liste</option>
+            <option value="tarih">Tarih</option>
           </select>
         </div>
 

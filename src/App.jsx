@@ -2,6 +2,24 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Header from "./components/Header";
 import FormEditor from "./components/FormEditor";
 
+const DESTEKLENEN_SORU_TURLERI = new Set([
+  "kisa_metin",
+  "paragraf",
+  "coktan_secmeli",
+  "onay_kutulari",
+  "acilir_liste",
+  "tarih",
+]);
+const TEMA_RENKLERI = new Set([
+  "#7C3AED",
+  "#2563EB",
+  "#059669",
+  "#E11D48",
+  "#EA580C",
+  "#0F172A",
+]);
+const JSON_DOSYA_BOYUTU_LIMITI = 2 * 1024 * 1024;
+
 function DashboardSidebar({ aktifEkran, ekranDegistir }) {
   return (
     <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white p-5 lg:block">
@@ -361,7 +379,11 @@ const FORM_SABLONLARI = [
 function App() {
   const [formAdi, setFormAdi] = useState("");
   const [aktifFormId, setAktifFormId] = useState(null);
-  const [aktifEkran, setAktifEkran] = useState("ana_sayfa");
+  const [aktifEkran, setAktifEkran] = useState(() => {
+    const kayitliEkran = sessionStorage.getItem("formlab_aktif_ekran");
+
+    return kayitliEkran === "formlar" ? "formlar" : "ana_sayfa";
+  });
   const [paylasimFormId, setPaylasimFormId] = useState(() =>
     getPaylasimFormId(),
   );
@@ -382,6 +404,7 @@ function App() {
   const [removingFormIds, setRemovingFormIds] = useState(new Set());
   const [formCogaltilmaBildirimi, setFormCogaltilmaBildirimi] =
     useState(false);
+  const [jsonBildirimi, setJsonBildirimi] = useState(null);
   const [paylasimModal, setPaylasimModal] = useState({
     acik: false,
     formId: null,
@@ -397,6 +420,7 @@ function App() {
   const yeniFormInputRef = useRef(null);
   const formDuzenlemeInputRef = useRef(null);
   const paylasimInputRef = useRef(null);
+  const jsonDosyaInputRef = useRef(null);
 
   // Formları LocalStorage'a kaydet
   useEffect(() => {
@@ -604,6 +628,149 @@ function App() {
     }, 180);
   }
 
+  function guvenliDosyaAdi(ad) {
+      const dosyaAdi = ad
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase();
+
+      return `${dosyaAdi || "form"}.json`;
+    }
+
+    function formDisaAktar(form) {
+      const json = JSON.stringify(form, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = guvenliDosyaAdi(form.ad);
+      link.click();
+      URL.revokeObjectURL(url);
+      setJsonBildirimi({ tur: "basari", mesaj: "Form dışa aktarıldı" });
+      window.setTimeout(() => setJsonBildirimi(null), 2200);
+    }
+
+    function formVerisiniDogrula(veri) {
+      if (!veri || typeof veri !== "object" || Array.isArray(veri)) {
+        return "JSON bir form nesnesi içermelidir.";
+      }
+
+      if (typeof veri.ad !== "string" || veri.ad.trim() === "") {
+        return "Form adı geçerli bir metin olmalıdır.";
+      }
+
+      if (!Array.isArray(veri.sorular)) {
+        return "Form sorular dizisi içermelidir.";
+      }
+
+      for (const [index, soru] of veri.sorular.entries()) {
+        if (!soru || typeof soru !== "object" || Array.isArray(soru)) {
+          return `${index + 1}. soru geçerli değil.`;
+        }
+
+        if (
+          typeof soru.baslik !== "string" ||
+          soru.baslik.trim() === "" ||
+          !DESTEKLENEN_SORU_TURLERI.has(soru.tur) ||
+          typeof soru.zorunlu !== "boolean"
+        ) {
+          return `${index + 1}. sorunun başlık, tür veya zorunluluk bilgisi geçersiz.`;
+        }
+
+        const secenekGerekli =
+          soru.tur === "coktan_secmeli" ||
+          soru.tur === "onay_kutulari" ||
+          soru.tur === "acilir_liste";
+
+        if (
+          secenekGerekli &&
+          (!Array.isArray(soru.secenekler) ||
+            soru.secenekler.length < 2 ||
+            soru.secenekler.some(
+              (secenek) => typeof secenek !== "string" || secenek.trim() === "",
+            ))
+        ) {
+          return `${index + 1}. soru en az iki geçerli seçenek içermelidir.`;
+        }
+      }
+
+      return null;
+    }
+
+    async function formIceriAktar(event) {
+      const dosya = event.target.files?.[0];
+      event.target.value = "";
+
+      if (!dosya) {
+        return;
+      }
+
+      if (!dosya.name.toLowerCase().endsWith(".json")) {
+        setJsonBildirimi({
+          tur: "hata",
+          mesaj: "Lütfen yalnızca .json dosyası seçin.",
+        });
+        window.setTimeout(() => setJsonBildirimi(null), 3000);
+        return;
+      }
+
+      if (dosya.size > JSON_DOSYA_BOYUTU_LIMITI) {
+        setJsonBildirimi({
+          tur: "hata",
+          mesaj: "JSON dosyası en fazla 2 MB olabilir.",
+        });
+        return;
+      }
+
+      try {
+        const veri = JSON.parse(await dosya.text());
+        const hata = formVerisiniDogrula(veri);
+
+        if (hata) {
+          setJsonBildirimi({ tur: "hata", mesaj: hata });
+          return;
+        }
+
+        const yeniForm = {
+          ...veri,
+          id: crypto.randomUUID(),
+          ad: veri.ad.trim(),
+          aciklama: typeof veri.aciklama === "string" ? veri.aciklama : "",
+          temaRengi: TEMA_RENKLERI.has(veri.temaRengi)
+            ? veri.temaRengi
+            : "#7C3AED",
+          sorular: veri.sorular.map((soru) => ({
+            ...soru,
+            id: crypto.randomUUID(),
+            baslik: soru.baslik.trim(),
+            ...(soru.secenekler
+              ? {
+                  secenekler: soru.secenekler.map((secenek) =>
+                    secenek.trim(),
+                  ),
+                }
+              : {}),
+          })),
+        };
+
+        setFormlar((mevcutFormlar) => [...mevcutFormlar, yeniForm]);
+        setJsonBildirimi({
+          tur: "basari",
+          mesaj: "Form içe aktarıldı",
+        });
+      } catch {
+        setJsonBildirimi({
+          tur: "hata",
+          mesaj: "Geçerli bir JSON dosyası seçin.",
+        });
+      }
+
+      window.setTimeout(() => setJsonBildirimi(null), 3000);
+    }
+
   function formCogaltil(formId) {
     const kaynakForm = formlar.find((form) => form.id === formId);
 
@@ -669,6 +836,7 @@ function App() {
   function ekranDegistir(ekran) {
     setAktifFormId(null);
     setAktifEkran(ekran);
+    sessionStorage.setItem("formlab_aktif_ekran", ekran);
   }
 
   function soruEkle(formId, yeniSoru) {
@@ -1063,16 +1231,32 @@ function App() {
 
               {aktifEkran === "formlar" && (
                 <section className="mt-8">
-                  <div className="mb-4 flex items-end justify-between">
+                  <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <h2 className="text-xl font-bold text-slate-800">Formlarım</h2>
                       <p className="mt-1 text-sm text-slate-500">
                         Oluşturduğun tüm formları buradan yönet.
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-slate-400">
-                      {formlar.length} form
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <input
+                        ref={jsonDosyaInputRef}
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={formIceriAktar}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => jsonDosyaInputRef.current?.click()}
+                        className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100"
+                      >
+                        İçe Aktar
+                      </button>
+                      <span className="text-sm font-medium text-slate-400">
+                        {formlar.length} form
+                      </span>
+                    </div>
                   </div>
 
                   {formlar.length === 0 ? (
@@ -1138,6 +1322,13 @@ function App() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => formDisaAktar(form)}
+                              className="rounded-lg bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                            >
+                              Dışa Aktar
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => formCogaltil(form.id)}
                               className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-100"
                             >
@@ -1168,6 +1359,19 @@ function App() {
           role="status"
         >
           Form çoğaltıldı
+        </div>
+      )}
+
+      {jsonBildirimi && (
+        <div
+          className={`fixed bottom-5 left-5 z-40 rounded-xl border bg-white px-4 py-3 text-sm font-medium shadow-lg ${
+            jsonBildirimi.tur === "hata"
+              ? "border-red-100 text-red-700"
+              : "border-emerald-100 text-emerald-700"
+          }`}
+          role="status"
+        >
+          {jsonBildirimi.mesaj}
         </div>
       )}
 

@@ -70,6 +70,15 @@ function PaylasilanForm({ form }) {
     setGonderildi(false);
   }
 
+  function onayKutusuDegistir(soruId, secenek) {
+    const mevcutCevaplar = cevaplar[soruId] || [];
+    const yeniCevaplar = mevcutCevaplar.includes(secenek)
+      ? mevcutCevaplar.filter((cevap) => cevap !== secenek)
+      : [...mevcutCevaplar, secenek];
+
+    cevapGuncelle(soruId, yeniCevaplar);
+  }
+
   return (
     <div className="min-h-screen bg-[#F8F9FC] px-4 py-6 text-[#1E293B] sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
@@ -147,6 +156,28 @@ function PaylasilanForm({ form }) {
                             cevapGuncelle(soru.id, event.target.value)
                           }
                           className="h-4 w-4 accent-purple-600"
+                        />
+                        {secenek}
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {soru.tur === "onay_kutulari" && (
+                  <div className="mt-3 space-y-2">
+                    {(soru.secenekler || []).map((secenek, index) => (
+                      <label
+                        key={`${soru.id}-${index}`}
+                        className="flex items-center gap-2 text-sm text-slate-600"
+                      >
+                        <input
+                          type="checkbox"
+                          value={secenek}
+                          checked={(cevaplar[soru.id] || []).includes(secenek)}
+                          onChange={() =>
+                            onayKutusuDegistir(soru.id, secenek)
+                          }
+                          className="h-4 w-4 rounded accent-purple-600"
                         />
                         {secenek}
                       </label>

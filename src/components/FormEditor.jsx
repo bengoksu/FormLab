@@ -28,6 +28,15 @@ function FormOnizleme({ form }) {
     setGonderildi(false);
   }
 
+  function onayKutusuDegistir(soruId, secenek) {
+    const mevcutCevaplar = cevaplar[soruId] || [];
+    const yeniCevaplar = mevcutCevaplar.includes(secenek)
+      ? mevcutCevaplar.filter((cevap) => cevap !== secenek)
+      : [...mevcutCevaplar, secenek];
+
+    cevapGuncelle(soruId, yeniCevaplar);
+  }
+
   return (
     <div className="page-shell space-y-5 rounded-xl border border-gray-200 bg-slate-50 p-5 transition-opacity duration-200 sm:p-6">
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
@@ -99,6 +108,28 @@ function FormOnizleme({ form }) {
                           cevapGuncelle(soru.id, event.target.value)
                         }
                         className="h-4 w-4 accent-purple-600"
+                      />
+                      {secenek}
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {soru.tur === "onay_kutulari" && (
+                <div className="mt-3 space-y-2">
+                  {(soru.secenekler || []).map((secenek, index) => (
+                    <label
+                      key={`${soru.id}-${index}`}
+                      className="flex items-center gap-2 text-sm text-gray-600"
+                    >
+                      <input
+                        type="checkbox"
+                        value={secenek}
+                        checked={(cevaplar[soru.id] || []).includes(secenek)}
+                        onChange={() =>
+                          onayKutusuDegistir(soru.id, secenek)
+                        }
+                        className="h-4 w-4 rounded accent-purple-600"
                       />
                       {secenek}
                     </label>
@@ -200,7 +231,8 @@ function SortableSoruKarti({
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-purple-500"
               />
 
-              {soru.tur === "coktan_secmeli" && (
+              {(soru.tur === "coktan_secmeli" ||
+                soru.tur === "onay_kutulari") && (
                 <div className="mt-3 space-y-2">
                   {duzenlenenSecenekler.map((secenek, index) => (
                     <div key={index} className="flex gap-2">
@@ -272,7 +304,9 @@ function SortableSoruKarti({
                     ? "Paragraf"
                     : soru.tur === "coktan_secmeli"
                       ? "Çoktan seçmeli"
-                      : "Kısa metin"}
+                      : soru.tur === "onay_kutulari"
+                        ? "Onay kutuları"
+                        : "Kısa metin"}
                 </p>
                 {soruCevapAlaniGoster(soru)}
               </div>
@@ -375,7 +409,10 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
       zorunlu: false,
     };
 
-    if (soruTuru === "coktan_secmeli") {
+    if (
+      soruTuru === "coktan_secmeli" ||
+      soruTuru === "onay_kutulari"
+    ) {
       const temizSecenekler = temizSecenekleriAl(secenekler);
 
       if (temizSecenekler.length < 2) {
@@ -399,7 +436,9 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
     setDuzenlenenSoruId(soru.id);
     setDuzenlenenBaslik(soru.baslik);
     setDuzenlenenSecenekler(
-      soru.tur === "coktan_secmeli" ? [...(soru.secenekler || [])] : [],
+      soru.tur === "coktan_secmeli" || soru.tur === "onay_kutulari"
+        ? [...(soru.secenekler || [])]
+        : [],
     );
     setDuzenlemeHatasi("");
   }
@@ -420,7 +459,10 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
       return;
     }
 
-    if (soru.tur === "coktan_secmeli") {
+    if (
+      soru.tur === "coktan_secmeli" ||
+      soru.tur === "onay_kutulari"
+    ) {
       const temizSecenekler = temizSecenekleriAl(duzenlenenSecenekler);
 
       if (temizSecenekler.length < 2) {
@@ -461,12 +503,19 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
       );
     }
 
-    if (soru.tur === "coktan_secmeli") {
+    if (
+      soru.tur === "coktan_secmeli" ||
+      soru.tur === "onay_kutulari"
+    ) {
       return (
         <div className="mt-3 space-y-2">
           {(soru.secenekler || []).map((secenek, index) => (
             <label key={`${soru.id}-${index}`} className="flex items-center gap-2 text-sm text-gray-600">
-              <input type="radio" name={`soru-${soru.id}`} disabled />
+              <input
+                type={soru.tur === "onay_kutulari" ? "checkbox" : "radio"}
+                name={`soru-${soru.id}`}
+                disabled
+              />
               {secenek}
             </label>
           ))}
@@ -561,10 +610,12 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
             <option value="kisa_metin">Kısa Metin</option>
             <option value="paragraf">Paragraf</option>
             <option value="coktan_secmeli">Çoktan Seçmeli</option>
+            <option value="onay_kutulari">Onay Kutuları</option>
           </select>
         </div>
 
-        {soruTuru === "coktan_secmeli" && (
+        {(soruTuru === "coktan_secmeli" ||
+          soruTuru === "onay_kutulari") && (
           <div className="mt-4 space-y-2">
             {secenekler.map((secenek, index) => (
               <div key={index} className="flex gap-2">

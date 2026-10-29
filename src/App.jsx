@@ -184,6 +184,24 @@ function PaylasilanForm({ form }) {
                     ))}
                   </div>
                 )}
+
+                {soru.tur === "acilir_liste" && (
+                  <select
+                    id={`paylasilan-${soru.id}`}
+                    value={cevaplar[soru.id] || ""}
+                    onChange={(event) =>
+                      cevapGuncelle(soru.id, event.target.value)
+                    }
+                    className="mt-3 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm outline-none transition focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  >
+                    <option value="">Bir seçenek seçin</option>
+                    {(soru.secenekler || []).map((secenek, index) => (
+                      <option key={`${soru.id}-${index}`} value={secenek}>
+                        {secenek}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             ))}
           </section>

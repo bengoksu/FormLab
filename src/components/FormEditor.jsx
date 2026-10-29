@@ -136,6 +136,24 @@ function FormOnizleme({ form }) {
                   ))}
                 </div>
               )}
+
+              {soru.tur === "acilir_liste" && (
+                <select
+                  id={`onizleme-${soru.id}`}
+                  value={cevaplar[soru.id] || ""}
+                  onChange={(event) =>
+                    cevapGuncelle(soru.id, event.target.value)
+                  }
+                  className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                >
+                  <option value="">Bir seçenek seçin</option>
+                  {(soru.secenekler || []).map((secenek, index) => (
+                    <option key={`${soru.id}-${index}`} value={secenek}>
+                      {secenek}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           ))}
         </div>
@@ -232,7 +250,8 @@ function SortableSoruKarti({
               />
 
               {(soru.tur === "coktan_secmeli" ||
-                soru.tur === "onay_kutulari") && (
+                soru.tur === "onay_kutulari" ||
+                soru.tur === "acilir_liste") && (
                 <div className="mt-3 space-y-2">
                   {duzenlenenSecenekler.map((secenek, index) => (
                     <div key={index} className="flex gap-2">
@@ -246,7 +265,8 @@ function SortableSoruKarti({
                             event.target.value,
                           )
                         }
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-purple-500"
+                        placeholder={`Seçenek ${index + 1}`}
+                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none placeholder:text-gray-400 focus:border-purple-500"
                       />
                       {duzenlenenSecenekler.length > 2 && (
                         <button
@@ -306,7 +326,9 @@ function SortableSoruKarti({
                       ? "Çoktan seçmeli"
                       : soru.tur === "onay_kutulari"
                         ? "Onay kutuları"
-                        : "Kısa metin"}
+                        : soru.tur === "acilir_liste"
+                          ? "Açılır liste"
+                          : "Kısa metin"}
                 </p>
                 {soruCevapAlaniGoster(soru)}
               </div>
@@ -411,7 +433,8 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
 
     if (
       soruTuru === "coktan_secmeli" ||
-      soruTuru === "onay_kutulari"
+      soruTuru === "onay_kutulari" ||
+      soruTuru === "acilir_liste"
     ) {
       const temizSecenekler = temizSecenekleriAl(secenekler);
 
@@ -430,13 +453,19 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
   function turDegistir(tur) {
     setSoruTuru(tur);
     setSecenekHatasi("");
+
+    if (tur === "acilir_liste") {
+      setSecenekler(["", ""]);
+    }
   }
 
   function duzenlemeyiBaslat(soru) {
     setDuzenlenenSoruId(soru.id);
     setDuzenlenenBaslik(soru.baslik);
     setDuzenlenenSecenekler(
-      soru.tur === "coktan_secmeli" || soru.tur === "onay_kutulari"
+      soru.tur === "coktan_secmeli" ||
+      soru.tur === "onay_kutulari" ||
+      soru.tur === "acilir_liste"
         ? [...(soru.secenekler || [])]
         : [],
     );
@@ -461,7 +490,8 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
 
     if (
       soru.tur === "coktan_secmeli" ||
-      soru.tur === "onay_kutulari"
+      soru.tur === "onay_kutulari" ||
+      soru.tur === "acilir_liste"
     ) {
       const temizSecenekler = temizSecenekleriAl(duzenlenenSecenekler);
 
@@ -505,20 +535,39 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
 
     if (
       soru.tur === "coktan_secmeli" ||
-      soru.tur === "onay_kutulari"
+      soru.tur === "onay_kutulari" ||
+      soru.tur === "acilir_liste"
     ) {
       return (
         <div className="mt-3 space-y-2">
-          {(soru.secenekler || []).map((secenek, index) => (
-            <label key={`${soru.id}-${index}`} className="flex items-center gap-2 text-sm text-gray-600">
-              <input
-                type={soru.tur === "onay_kutulari" ? "checkbox" : "radio"}
-                name={`soru-${soru.id}`}
-                disabled
-              />
-              {secenek}
-            </label>
-          ))}
+          {soru.tur === "acilir_liste" ? (
+            <select
+              disabled
+              defaultValue=""
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="">Bir seçenek seçin</option>
+              {(soru.secenekler || []).map((secenek, index) => (
+                <option key={`${soru.id}-${index}`} value={secenek}>
+                  {secenek}
+                </option>
+              ))}
+            </select>
+          ) : (
+            (soru.secenekler || []).map((secenek, index) => (
+              <label
+                key={`${soru.id}-${index}`}
+                className="flex items-center gap-2 text-sm text-gray-600"
+              >
+                <input
+                  type={soru.tur === "onay_kutulari" ? "checkbox" : "radio"}
+                  name={`soru-${soru.id}`}
+                  disabled
+                />
+                {secenek}
+              </label>
+            ))
+          )}
         </div>
       );
     }
@@ -611,11 +660,13 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
             <option value="paragraf">Paragraf</option>
             <option value="coktan_secmeli">Çoktan Seçmeli</option>
             <option value="onay_kutulari">Onay Kutuları</option>
+            <option value="acilir_liste">Açılır Liste</option>
           </select>
         </div>
 
         {(soruTuru === "coktan_secmeli" ||
-          soruTuru === "onay_kutulari") && (
+          soruTuru === "onay_kutulari" ||
+          soruTuru === "acilir_liste") && (
           <div className="mt-4 space-y-2">
             {secenekler.map((secenek, index) => (
               <div key={index} className="flex gap-2">
@@ -626,7 +677,7 @@ function FormEditor({ form, geriDon, soruEkle, soruSil, soruGuncelle, soruSirala
                   onChange={(event) =>
                     secenekGuncelle(setSecenekler, index, event.target.value)
                   }
-                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none focus:border-purple-500"
+                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none placeholder:text-gray-400 focus:border-purple-500"
                 />
                 {secenekler.length > 2 && (
                   <button

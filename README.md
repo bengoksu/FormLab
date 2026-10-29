@@ -209,32 +209,27 @@ Proje sürecinde aşağıdaki konular üzerinde çalışılmıştır:
 ### 🏠 Ana Sayfa
 Formların yönetildiği ve genel istatistiklerin görüntülendiği dashboard.
 
-![FormLab Ana Sayfa](<img width="1580" height="865" alt="image" src="https://github.com/user-attachments/assets/e6453be0-8acd-4c75-892e-d707eeb3d209" />
-)
+<img width="1550" height="871" alt="Image" src="https://github.com/user-attachments/assets/819c52aa-c2c9-47c2-82c3-8064a1c2fe15" />
 
 ### ✏️ Form Editörü
 Dinamik soruların oluşturulduğu, düzenlendiği ve sürükle-bırak ile sıralandığı çalışma alanı.
 
-![FormLab Form Editörü](<img width="1427" height="877" alt="image" src="https://github.com/user-attachments/assets/66c5354e-c80c-4a3a-b1a6-d309cb7b12c0" />
-)
+<img width="1427" height="877" alt="image" src="https://github.com/user-attachments/assets/66c5354e-c80c-4a3a-b1a6-d309cb7b12c0" />
 
 ### 👁️ Canlı Önizleme
 Hazırlanan formun kullanıcıya nasıl görüneceğini gösteren önizleme ekranı.
 
-![FormLab Canlı Önizleme](<img width="1141" height="851" alt="image" src="https://github.com/user-attachments/assets/a89adab4-3cc3-4079-99f1-86e9a82585b9" />
-)
+<img width="1141" height="851" alt="image" src="https://github.com/user-attachments/assets/a89adab4-3cc3-4079-99f1-86e9a82585b9" />
 
 ### 📚 Hazır Form Şablonları
 Farklı kullanım amaçları için sunulan hazır form şablonları.
 
-![FormLab Hazır Şablonlar](<img width="1391" height="826" alt="image" src="https://github.com/user-attachments/assets/924bbd6c-e7b9-46d1-8c8f-d997490f0402" />
-)
+<img width="1391" height="826" alt="image" src="https://github.com/user-attachments/assets/924bbd6c-e7b9-46d1-8c8f-d997490f0402" />
 
 ### ✏️ Form Ayarı
 Form açıklaması eklenebilen ve kullanıcı isteğine göre form renginin değişebildiği alan.
 
-![FormLab Form Ayarı](<img width="1133" height="685" alt="image" src="https://github.com/user-attachments/assets/923f3588-9354-4209-bb11-47c35e6a0533" />
-)
+<img width="1133" height="685" alt="image" src="https://github.com/user-attachments/assets/923f3588-9354-4209-bb11-47c35e6a0533" />
 ---
 
 ## 👩‍💻 Geliştirici

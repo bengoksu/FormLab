@@ -13,6 +13,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { benzersizIdOlustur } from "../utils/benzersizId";
 import { CSS } from "@dnd-kit/utilities";
 
 const VARSAYILAN_TEMA_RENGI = "#7C3AED";
@@ -20,9 +21,9 @@ const TEMA_RENKLERI = [
   { ad: "Mor", deger: "#7C3AED" },
   { ad: "Mavi", deger: "#2563EB" },
   { ad: "Yeşil", deger: "#059669" },
-  { ad: "Pembe", deger: "#E11D48" },
-  { ad: "Turuncu", deger: "#EA580C" },
-  { ad: "Koyu lacivert", deger: "#0F172A" },
+  { ad: "Pembe", deger: "#FF69B4" },
+  { ad: "Sarı", deger: "#f4c829" },
+  { ad: "kırmızı", deger: "#FF0000" },
 ];
 
 function FormOnizleme({ form }) {
@@ -158,9 +159,7 @@ function FormOnizleme({ form }) {
                         type="checkbox"
                         value={secenek}
                         checked={(cevaplar[soru.id] || []).includes(secenek)}
-                        onChange={() =>
-                          onayKutusuDegistir(soru.id, secenek)
-                        }
+                        onChange={() => onayKutusuDegistir(soru.id, secenek)}
                         className="h-4 w-4 rounded accent-purple-600"
                       />
                       {secenek}
@@ -231,7 +230,8 @@ function FormAyarlari({ form, formAyarlariGuncelle }) {
           Form görünümünü özelleştirin
         </h3>
         <p className="mt-2 text-sm text-gray-500">
-          Açıklama ve tema rengi değişikliklerini kaydetmeden önce gözden geçirin.
+          Açıklama ve tema rengi değişikliklerini kaydetmeden önce gözden
+          geçirin.
         </p>
       </div>
 
@@ -375,10 +375,7 @@ function SortableSoruKarti({
         >
           <span aria-hidden="true" className="grid grid-cols-2 gap-0.5">
             {Array.from({ length: 6 }, (_, index) => (
-              <span
-                key={index}
-                className="h-1 w-1 rounded-full bg-current"
-              />
+              <span key={index} className="h-1 w-1 rounded-full bg-current" />
             ))}
           </span>
         </button>
@@ -477,7 +474,7 @@ function SortableSoruKarti({
                           ? "Açılır liste"
                           : soru.tur === "tarih"
                             ? "Tarih"
-                          : "Kısa metin"}
+                            : "Kısa metin"}
                 </p>
                 {soruCevapAlaniGoster(soru)}
               </div>
@@ -538,7 +535,9 @@ function FormEditor({
   const sorular = form.sorular || [];
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   function secenekEkle(setter) {
@@ -555,9 +554,7 @@ function FormEditor({
 
   function secenekSil(setter, index) {
     setter((mevcutSecenekler) =>
-      mevcutSecenekler.filter(
-        (_, secenekIndex) => secenekIndex !== index,
-      ),
+      mevcutSecenekler.filter((_, secenekIndex) => secenekIndex !== index),
     );
   }
 
@@ -582,7 +579,7 @@ function FormEditor({
     }
 
     const yeniSoru = {
-      id: crypto.randomUUID(),
+      id: benzersizIdOlustur(),
       baslik,
       tur: soruTuru,
       zorunlu: false,
@@ -621,8 +618,8 @@ function FormEditor({
     setDuzenlenenBaslik(soru.baslik);
     setDuzenlenenSecenekler(
       soru.tur === "coktan_secmeli" ||
-      soru.tur === "onay_kutulari" ||
-      soru.tur === "acilir_liste"
+        soru.tur === "onay_kutulari" ||
+        soru.tur === "acilir_liste"
         ? [...(soru.secenekler || [])]
         : [],
     );
@@ -753,7 +750,9 @@ function FormEditor({
     <section className="space-y-6">
       <div className="flex flex-col gap-5 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-7 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-purple-600">Form çalışma alanı</p>
+          <p className="text-sm font-semibold text-purple-600">
+            Form çalışma alanı
+          </p>
           <h2 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">
             {form.ad}
           </h2>
@@ -819,155 +818,162 @@ function FormEditor({
       </div>
 
       {gorunum === "ayarlar" ? (
-        <FormAyarlari
-          form={form}
-          formAyarlariGuncelle={formAyarlariGuncelle}
-        />
+        <FormAyarlari form={form} formAyarlariGuncelle={formAyarlariGuncelle} />
       ) : gorunum === "onizleme" ? (
         <FormOnizleme key="onizleme" form={form} />
       ) : (
-      <div
-        key="duzenleme"
-        className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]"
-      >
-      <div className="page-shell min-w-0 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-7">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
-              İçerik
-            </p>
-            <h3 className="mt-1 text-lg font-bold text-slate-800">Soru ekle</h3>
-          </div>
-          <p className="text-sm text-slate-500">Formunuza yeni bir alan ekleyin.</p>
-        </div>
+        <div
+          key="duzenleme"
+          className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)]"
+        >
+          <div className="page-shell min-w-0 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:p-7">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
+                  İçerik
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-800">
+                  Soru ekle
+                </h3>
+              </div>
+              <p className="text-sm text-slate-500">
+                Formunuza yeni bir alan ekleyin.
+              </p>
+            </div>
 
-        <div className="mt-4 grid min-w-0 gap-3">
-          <input
-            type="text"
-            placeholder="Soru başlığını giriniz"
-            value={soruBasligi}
-            onChange={(event) => setSoruBasligi(event.target.value)}
-            className="min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
-          />
+            <div className="mt-4 grid min-w-0 gap-3">
+              <input
+                type="text"
+                placeholder="Soru başlığını giriniz"
+                value={soruBasligi}
+                onChange={(event) => setSoruBasligi(event.target.value)}
+                className="min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+              />
 
-          <select
-            value={soruTuru}
-            onChange={(event) => turDegistir(event.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
-          >
-            <option value="kisa_metin">Kısa Metin</option>
-            <option value="paragraf">Paragraf</option>
-            <option value="coktan_secmeli">Çoktan Seçmeli</option>
-            <option value="onay_kutulari">Onay Kutuları</option>
-            <option value="acilir_liste">Açılır Liste</option>
-            <option value="tarih">Tarih</option>
-          </select>
-        </div>
+              <select
+                value={soruTuru}
+                onChange={(event) => turDegistir(event.target.value)}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+              >
+                <option value="kisa_metin">Kısa Metin</option>
+                <option value="paragraf">Paragraf</option>
+                <option value="coktan_secmeli">Çoktan Seçmeli</option>
+                <option value="onay_kutulari">Onay Kutuları</option>
+                <option value="acilir_liste">Açılır Liste</option>
+                <option value="tarih">Tarih</option>
+              </select>
+            </div>
 
-        {(soruTuru === "coktan_secmeli" ||
-          soruTuru === "onay_kutulari" ||
-          soruTuru === "acilir_liste") && (
-          <div className="mt-4 space-y-2">
-            {secenekler.map((secenek, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={secenek}
-                  placeholder={`Seçenek ${index + 1}`}
-                  onChange={(event) =>
-                    secenekGuncelle(setSecenekler, index, event.target.value)
-                  }
-                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none placeholder:text-gray-400 focus:border-purple-500"
-                />
-                {secenekler.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => secenekSil(setSecenekler, index)}
-                    className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100"
-                  >
-                    Sil
-                  </button>
+            {(soruTuru === "coktan_secmeli" ||
+              soruTuru === "onay_kutulari" ||
+              soruTuru === "acilir_liste") && (
+              <div className="mt-4 space-y-2">
+                {secenekler.map((secenek, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={secenek}
+                      placeholder={`Seçenek ${index + 1}`}
+                      onChange={(event) =>
+                        secenekGuncelle(
+                          setSecenekler,
+                          index,
+                          event.target.value,
+                        )
+                      }
+                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none placeholder:text-gray-400 focus:border-purple-500"
+                    />
+                    {secenekler.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => secenekSil(setSecenekler, index)}
+                        className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100"
+                      >
+                        Sil
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => secenekEkle(setSecenekler)}
+                  className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
+                >
+                  + Seçenek Ekle
+                </button>
+
+                {secenekHatasi && (
+                  <p className="text-sm text-red-600">{secenekHatasi}</p>
                 )}
               </div>
-            ))}
+            )}
 
             <button
               type="button"
-              onClick={() => secenekEkle(setSecenekler)}
-              className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-100"
+              onClick={soruOlustur}
+              className="mt-4 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 active:scale-[0.98]"
             >
-              + Seçenek Ekle
+              Soru Ekle
             </button>
+          </div>
 
-            {secenekHatasi && (
-              <p className="text-sm text-red-600">{secenekHatasi}</p>
+          <div className="min-w-0 space-y-3">
+            <div className="flex items-center justify-between rounded-2xl border border-[#E5E7EB] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:px-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
+                  İçerik
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-800">
+                  Sorularım
+                </h3>
+              </div>
+              <span className="rounded-full bg-purple-50 px-3 py-1 text-sm font-semibold text-purple-700">
+                {sorular.length} soru
+              </span>
+            </div>
+            {sorular.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center">
+                <p className="text-gray-500">Henüz soru eklenmedi.</p>
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={suruklemeBitti}
+              >
+                <SortableContext
+                  items={sorular.map((soru) => soru.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {sorular.map((soru) => (
+                    <SortableSoruKarti
+                      key={soru.id}
+                      soru={soru}
+                      duzenlenenSoruId={duzenlenenSoruId}
+                      duzenlemeyiBaslat={duzenlemeyiBaslat}
+                      soruyuKaydet={soruyuKaydet}
+                      duzenlemeyiIptalEt={duzenlemeyiIptalEt}
+                      duzenlenenBaslik={duzenlenenBaslik}
+                      setDuzenlenenBaslik={setDuzenlenenBaslik}
+                      duzenlenenSecenekler={duzenlenenSecenekler}
+                      setDuzenlenenSecenekler={setDuzenlenenSecenekler}
+                      secenekGuncelle={secenekGuncelle}
+                      secenekSil={secenekSil}
+                      secenekEkle={secenekEkle}
+                      duzenlemeHatasi={duzenlemeHatasi}
+                      setDuzenlemeHatasi={setDuzenlemeHatasi}
+                      soruCevapAlaniGoster={soruCevapAlaniGoster}
+                      zorunlulukDegistir={zorunlulukDegistir}
+                      formId={form.id}
+                      soruSil={soruSil}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </div>
-        )}
-
-        <button
-          type="button"
-          onClick={soruOlustur}
-          className="mt-4 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 active:scale-[0.98]"
-        >
-          Soru Ekle
-        </button>
-      </div>
-
-      <div className="min-w-0 space-y-3">
-        <div className="flex items-center justify-between rounded-2xl border border-[#E5E7EB] bg-white px-5 py-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:px-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-600">
-              İçerik
-            </p>
-            <h3 className="mt-1 text-lg font-bold text-slate-800">Sorularım</h3>
-          </div>
-          <span className="rounded-full bg-purple-50 px-3 py-1 text-sm font-semibold text-purple-700">
-            {sorular.length} soru
-          </span>
         </div>
-        {sorular.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center">
-            <p className="text-gray-500">Henüz soru eklenmedi.</p>
-          </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={suruklemeBitti}
-          >
-            <SortableContext
-              items={sorular.map((soru) => soru.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {sorular.map((soru) => (
-                <SortableSoruKarti
-                  key={soru.id}
-                  soru={soru}
-                  duzenlenenSoruId={duzenlenenSoruId}
-                  duzenlemeyiBaslat={duzenlemeyiBaslat}
-                  soruyuKaydet={soruyuKaydet}
-                  duzenlemeyiIptalEt={duzenlemeyiIptalEt}
-                  duzenlenenBaslik={duzenlenenBaslik}
-                  setDuzenlenenBaslik={setDuzenlenenBaslik}
-                  duzenlenenSecenekler={duzenlenenSecenekler}
-                  setDuzenlenenSecenekler={setDuzenlenenSecenekler}
-                  secenekGuncelle={secenekGuncelle}
-                  secenekSil={secenekSil}
-                  secenekEkle={secenekEkle}
-                  duzenlemeHatasi={duzenlemeHatasi}
-                  setDuzenlemeHatasi={setDuzenlemeHatasi}
-                  soruCevapAlaniGoster={soruCevapAlaniGoster}
-                  zorunlulukDegistir={zorunlulukDegistir}
-                  formId={form.id}
-                  soruSil={soruSil}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        )}
-      </div>
-      </div>
       )}
     </section>
   );

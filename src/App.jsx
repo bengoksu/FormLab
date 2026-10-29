@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import FormEditor from "./components/FormEditor";
+import { benzersizIdOlustur } from "./utils/benzersizId";
 
 const DESTEKLENEN_SORU_TURLERI = new Set([
   "kisa_metin",
@@ -412,9 +413,17 @@ function App() {
   });
 
   const [formlar, setFormlar] = useState(() => {
-    const kayitliFormlar = localStorage.getItem("formlab_formlar");
+    try {
+      const kayitliFormlar = localStorage.getItem("formlab_formlar");
+      const cozulmusFormlar = kayitliFormlar
+        ? JSON.parse(kayitliFormlar)
+        : [];
 
-    return kayitliFormlar ? JSON.parse(kayitliFormlar) : [];
+      return Array.isArray(cozulmusFormlar) ? cozulmusFormlar : [];
+    } catch (error) {
+      console.error("Formlar LocalStorage'dan okunamadı.", error);
+      return [];
+    }
   });
   const yeniFormInputRef = useRef(null);
   const formDuzenlemeInputRef = useRef(null);
@@ -423,7 +432,11 @@ function App() {
 
   // Formları LocalStorage'a kaydet
   useEffect(() => {
-    localStorage.setItem("formlab_formlar", JSON.stringify(formlar));
+    try {
+      localStorage.setItem("formlab_formlar", JSON.stringify(formlar));
+    } catch (error) {
+      console.error("Formlar LocalStorage'a kaydedilemedi.", error);
+    }
   }, [formlar]);
 
   useEffect(() => {
@@ -588,13 +601,13 @@ function App() {
       (sablon) => sablon.id === sablonId,
     ) || FORM_SABLONLARI[0];
     const yeniForm = {
-      id: crypto.randomUUID(),
+      id: benzersizIdOlustur(),
       ad,
       aciklama: "",
       temaRengi: "#7C3AED",
       sorular: secilenSablon.sorular.map((soru) => ({
         ...soru,
-        id: crypto.randomUUID(),
+        id: benzersizIdOlustur(),
         ...(soru.secenekler ? { secenekler: [...soru.secenekler] } : {}),
       })),
     };
@@ -735,7 +748,7 @@ function App() {
 
         const yeniForm = {
           ...veri,
-          id: crypto.randomUUID(),
+          id: benzersizIdOlustur(),
           ad: veri.ad.trim(),
           aciklama: typeof veri.aciklama === "string" ? veri.aciklama : "",
           temaRengi: TEMA_RENKLERI.has(veri.temaRengi)
@@ -743,7 +756,7 @@ function App() {
             : "#7C3AED",
           sorular: veri.sorular.map((soru) => ({
             ...soru,
-            id: crypto.randomUUID(),
+            id: benzersizIdOlustur(),
             baslik: soru.baslik.trim(),
             ...(soru.secenekler
               ? {
@@ -778,11 +791,11 @@ function App() {
     }
 
     const kopyaForm = structuredClone(kaynakForm);
-    kopyaForm.id = crypto.randomUUID();
+    kopyaForm.id = benzersizIdOlustur();
     kopyaForm.ad = `${kaynakForm.ad} (Kopya)`;
     kopyaForm.sorular = (kaynakForm.sorular || []).map((soru) => ({
       ...soru,
-      id: crypto.randomUUID(),
+      id: benzersizIdOlustur(),
       ...(soru.secenekler
         ? { secenekler: [...soru.secenekler] }
         : {}),
